@@ -16,11 +16,11 @@ Reads from the MCP3424 ADC on the ADC Pi and ADC Pi Plus.
 #include <stdexcept>
 #include <errno.h>
 #include <fcntl.h>
-#include <iostream>
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <linux/i2c-dev.h>
 #include "ABE_ADCPi.h"
+#include "wiringPiI2C.h"
 
 #define fileName "/dev/i2c-1" // change to /dev/i2c-0 if you are using a revision 0002 or 0003 model B
 
@@ -39,6 +39,11 @@ ADCPi::ADCPi(char address1, char address2, char rate)
 	conversionmode = 1;  // Conversion Mode
 	pga = 0.5;			 // current pga setting
 	lsb = 0.000007812;   // default lsb value for 18 bit
+
+	//wiringPI setup 
+	_fdStorage[address1] = wiringPiI2CSetup(address1);
+	_fdStorage[address2] = wiringPiI2CSetup(address2);
+	wiringPiI2CSetup(address2);
 
 	set_bit_rate(rate);
 }
@@ -319,30 +324,8 @@ void ADCPi::set_conversion_mode(char mode)
 
 void ADCPi::write_byte(char address, char value)
 {
-	/**
-	* private method for writing a byte to the I2C port
-	*/
-
-	// open the i2c bus
-	if ((i2cbus = open(fileName, O_RDWR)) < 0)
-	{
-		printf("Failed to open i2c port for read %s \n", strerror(errno));
-		exit(1);
-	}
-
-	if (ioctl(i2cbus, I2C_SLAVE, address) < 0)
-	{
-		throw std::runtime_error("Failed to write to i2c port for write");
-	}
-
-	writebuffer[0] = value;
-
-	if ((write(i2cbus, writebuffer, 1)) != 1)
-	{
-		throw std::runtime_error("Failed to write to i2c device for write");
-	}
-
-	close(i2cbus);
+	int fd = _fdStorage[address];
+	wiringPiI2CWrite(fd, value);
 }
 
 void ADCPi::read_byte_array(char address, char reg, char length)
@@ -350,21 +333,13 @@ void ADCPi::read_byte_array(char address, char reg, char length)
 	/**
 	* private method for reading bytes from the I2C port
 	*/
-	if (ioctl(i2cbus, I2C_SLAVE, address) < 0)
-	{
-		throw std::runtime_error("Failed to write to i2c port for read");
-	}
-
-	writebuffer[0] = reg;
-
-	if ((write(i2cbus, writebuffer, 1)) != 1)
-	{
-		throw std::runtime_error("Failed to write to i2c device for read");
-	}
-
-	read(i2cbus, readbuffer, 4);
+	int fd = _fdStorage[address];
+	length += 1;
+	for (int i = 0; i < length; i++) {
+    	readbuffer[i] = wiringPiI2CReadReg8(fd, reg);
+    	reg += 1;
+  	}
 }
-
 char ADCPi::update_byte(char byte, char bit, char value)
 {
 	/**
