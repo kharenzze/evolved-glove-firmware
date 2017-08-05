@@ -18,11 +18,8 @@ Reads from the MCP3424 ADC on the ADC Pi and ADC Pi Plus.
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
-#include <linux/i2c-dev.h>
 #include "ABE_ADCPi.h"
 #include "wiringPiI2C.h"
-
-#define fileName "/dev/i2c-1" // change to /dev/i2c-0 if you are using a revision 0002 or 0003 model B
 
 using namespace ABElectronics_CPP_Libraries;
 
@@ -93,13 +90,7 @@ int ADCPi::read_raw(char channel)
 	// keep reading the ADC data until the conversion result is ready
 	int timeout = 1000; // number of reads before a timeout occurs
 	int x = 0;
-	
-	// open the i2c bus
-	if ((i2cbus = open(fileName, O_RDWR)) < 0)
-	{
-		printf("Failed to open i2c port for read %s \n", strerror(errno));
-		exit(1);
-	}
+
 	do
 	{
 		if (bitrate == 18)
@@ -132,10 +123,6 @@ int ADCPi::read_raw(char channel)
 
 		x++;
 	} while (1);
-
-	// close the i2c bus
-
-	close(i2cbus);
 
 	// extract the returned bytes and combine in the correct order
 	switch (bitrate)

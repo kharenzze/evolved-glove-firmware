@@ -83,7 +83,6 @@ char update_byte(char byte, char bit, char value);
 */
 void set_channel(char channel);
 
-int i2cbus;
 char i2caddress1;
 char i2caddress2;
 char config1;
