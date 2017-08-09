@@ -40,7 +40,6 @@ ADCPi::ADCPi(char address1, char address2, char rate)
 	//wiringPI setup 
 	_fdStorage[address1] = wiringPiI2CSetup(address1);
 	_fdStorage[address2] = wiringPiI2CSetup(address2);
-	wiringPiI2CSetup(address2);
 
 	set_bit_rate(rate);
 }
@@ -320,12 +319,10 @@ void ADCPi::read_byte_array(char address, char reg, char length)
 	/**
 	* private method for reading bytes from the I2C port
 	*/
+
 	int fd = _fdStorage[address];
-	length += 1;
-	for (int i = 0; i < length; i++) {
-    	readbuffer[i] = wiringPiI2CReadReg8(fd, reg);
-    	reg += 1;
-  	}
+	write_byte(address, reg);
+	read(fd, readbuffer, length);
 }
 char ADCPi::update_byte(char byte, char bit, char value)
 {

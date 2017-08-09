@@ -10,7 +10,7 @@ LIBS=-lwiringPi
 _DEPS = $(shell find $(IDIR) -type f)
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = demo-adcread.o ABE_ADCPi.o 
+_OBJ = ABE_ADCPi.o test.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 _TEST_BNO = test_BNO055.o Adafruit_BNO055.o 
