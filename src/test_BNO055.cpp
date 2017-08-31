@@ -21,6 +21,10 @@
 #define DEFAULT_DELAY 100000
 #define SYSTEM_SHOULD_BE_ENABLED false
 
+void clearscreen () {
+    printf("\033[2J\033[1;1H");
+}
+
 void displaySensorDetails(Adafruit_BNO055* device)
 {
 	sensor_t sensor;
@@ -121,6 +125,7 @@ int main() {
     displayAcc(&sensor);
     // sensor.getVector(Adafruit_BNO055::VECTOR_LINEARACCEL);
 		usleep(DEFAULT_DELAY);
+		clearscreen();
 	}
 
 	return 0;

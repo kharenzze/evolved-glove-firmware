@@ -5,20 +5,18 @@
 #include <time.h>
 #include <unistd.h>
 #include <iostream>
+#include "EGUtils.h"
 
 #include "ABE_ADCPi.h"
 
 using namespace std;
 using namespace ABElectronics_CPP_Libraries;
-
-void clearscreen () {
-    printf("\033[2J\033[1;1H");
-}
+using namespace EGUtils;
 
 int main (int argc, char **argv) {
 	ADCPi adc(0x68, 0x69, 18);
 	adc.set_conversion_mode(1);
-	adc.set_pga(1);
+	adc.set_pga(4);
 
 	while (1){
 		clearscreen();
