@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdexcept>
 #include <time.h>
 #include <unistd.h>
 #include <iostream>
@@ -23,12 +22,11 @@ struct sockaddr_in clientAddr;
 socklen_t clientAddrLen;
 
 int openSocket (int port) {
-	int sockfd, newsockfd, n, recv_len;
-	char buffer[BUFFER_LEN];
+	int sockfd;
 	struct sockaddr_in serv_addr;
 
 	socklen_t slen;
-	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+	sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (sockfd < 0) 
 		 error("ERROR opening socket");
 	
@@ -44,17 +42,30 @@ int openSocket (int port) {
 }
 
 bool waitForConnection (int sockfd, char* buffer, int bufferlength) {
+	struct sockaddr_in _clientAddr;
+	socklen_t _clientAddrLen;
 	int recv_len;
 	cout << "Waiting for new connection..." << endl;
-	if ((recv_len = recvfrom(sockfd, buffer, bufferlength, 0, (struct sockaddr *) &clientAddr, &clientAddrLen)) == -1){
+	if ((recv_len = recvfrom(sockfd, buffer, bufferlength, 0, (struct sockaddr *) &_clientAddr, &_clientAddrLen)) == -1){
 		error("recvfrom()");
 	}
+	buffer[recv_len] = '\0';
 	string input(buffer);
+	clientAddr = _clientAddr;
+	clientAddrLen = _clientAddrLen;
 	return input.compare("HELLO") == 0;
 }
 
+bool sendData (int sockfd, char* data, int len) {
+	bool error = false;
+	if (error = sendto(sockfd, data, len, 0, (struct sockaddr*) &clientAddr, clientAddrLen) == -1) {
+		cout << "Error sending" << endl;
+	}
+	return !error;
+}
+
 int main (int argc, char **argv) {
-	int port, sockfd;
+	int port, sockfd, status;
 	char buffer[BUFFER_LEN];
 	if (argc > 1) {
 		port = atoi(argv[1]);
@@ -63,8 +74,13 @@ int main (int argc, char **argv) {
 	}
 	sockfd = openSocket(port);
 	while (true) {
-		if (waitForConnection(sockfd, buffer, BUFFER_LEN)) {
+		if (status = waitForConnection(sockfd, buffer, BUFFER_LEN)) {
 			cout << "ready!!" << endl;
+			while (status) {
+				string data = "sending";
+				sendData(sockfd, &(data[0]), data.length());
+				sleep(1);
+			}
 		}
 	}
 
