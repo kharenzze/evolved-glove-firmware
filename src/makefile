@@ -10,7 +10,7 @@ LIBS=-lwiringPi
 _DEPS = $(shell find $(IDIR) -type f)
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = ABE_ADCPi.o main.o
+_OBJ = ABE_ADCPi.o SensorManager.o main.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 _TEST_FILES = ABE_ADCPi.o test.o

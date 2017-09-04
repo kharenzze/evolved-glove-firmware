@@ -12,7 +12,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include "ABE_ADCPi.h"
+#include "SensorManager.h"
 
 using namespace std;
 using namespace ABElectronics_CPP_Libraries;
@@ -67,6 +67,7 @@ bool sendData (int sockfd, char* data, int len) {
 int main (int argc, char **argv) {
 	int port, sockfd, status;
 	char buffer[BUFFER_LEN];
+	SensorManager manager;
 	if (argc > 1) {
 		port = atoi(argv[1]);
 	} else {
@@ -77,8 +78,15 @@ int main (int argc, char **argv) {
 		if (status = waitForConnection(sockfd, buffer, BUFFER_LEN)) {
 			cout << "ready!!" << endl;
 			while (status) {
-				string data = "sending";
-				sendData(sockfd, &(data[0]), data.length());
+				
+				char data[BUFFER_LEN];
+				int length = 0;
+				manager.getSensorData(data, &length);
+				// for (int i = 0; i < 4; i++) {
+				// 	printf("%d", data[i]);
+				// 	fflush(stdout);
+				// }
+				sendData(sockfd, data, length);
 				sleep(1);
 			}
 		}
