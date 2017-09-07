@@ -19,11 +19,14 @@ TEST_FILES = $(patsubst %,$(ODIR)/%,$(_TEST_FILES))
 _TEST_BNO = test_BNO055.o Adafruit_BNO055.o 
 TEST_BNO = $(patsubst %,$(ODIR)/%,$(_TEST_BNO))
 
-$(ODIR)/%.o: %.cpp $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
-
 firm: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+$(ODIR)/ABE_ADCPi.o: ABE_ADCPi.cpp $(IDIR)/ABE_ADCPi.h
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+$(ODIR)/%.o: %.cpp $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
 
 testmake: $(TEST_FILES)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
