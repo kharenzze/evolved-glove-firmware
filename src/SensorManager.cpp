@@ -8,6 +8,7 @@
 #include "EGConfig.h"
 #include <iostream>
 #include <unistd.h>
+#include <chrono>
  
 using namespace std;
 using namespace EGUtils;
@@ -21,12 +22,24 @@ void SensorManager::init (void) {
 }
 
 void SensorManager::getSensorData (char* buffer, int* length) {
+	*length = 8; //reserving space for timestamp
 	cout << "trama init" << endl;
+	// reading mainADC data for fingers
 	for (int i = 1; i <= CHANNELS_PER_ADC; i++) {
 		double data = mainADC->read_voltage(i);
 		//cout << i << ": " << data << endl;
 		appendDoubleToPacketBuffer(data, buffer, length);
 		// usleep(30);
 	}
+	
+	//set Timestamp
+	auto now = chrono::high_resolution_clock::now();
+	auto ns = chrono::duration_cast<chrono::nanoseconds>(now.time_since_epoch()).count();
+	char* timestampAsBytes = (char*) &ns;
+
+	for (int i = 0; i < sizeof(ns); i++) {
+		buffer[i] = timestampAsBytes[i];
+	}
+
 }
 
