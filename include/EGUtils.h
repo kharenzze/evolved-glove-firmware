@@ -16,48 +16,40 @@ namespace EGUtils {
         throw std::runtime_error (s);
     }
 
-    inline void appendFloatToPacketBuffer (float number, char* buffer, int* length) {
-        char* numberAsBytes = (char*) &number;
-        int bytesLength = sizeof(float);
-        int newLength = *length + bytesLength;
+    inline void appendDataToPacketBuffer (char* data, int dataLength, char* buffer, int* length) {
+        int newLength = *length + dataLength;
         if (newLength >= BUFFER_LEN) {
             error("Exceed packet length");
         }
         int j = 0;
         for (int i = *length; i < newLength; i++) {
-            buffer[i] = numberAsBytes[j];
+            buffer[i] = data[j];
             j++;
         }
         *length = newLength;
+    }
+
+    inline void appendFloatToPacketBuffer (float number, char* buffer, int* length) {
+        char* numberAsBytes = (char*) &number;
+        int bytesLength = sizeof(float);
+        appendDataToPacketBuffer(numberAsBytes, bytesLength, buffer, length);
     }
 
     inline void appendDoubleToPacketBuffer (double number, char* buffer, int* length) {
         char* numberAsBytes = (char*) &number;
         int bytesLength = sizeof(double);
-        int newLength = *length + bytesLength;
-        if (newLength >= BUFFER_LEN) {
-            error("Exceed packet length");
-        }
-        int j = 0;
-        for (int i = *length; i < newLength; i++) {
-            buffer[i] = numberAsBytes[j];
-            j++;
-        }
-        *length = newLength;
+        appendDataToPacketBuffer(numberAsBytes, bytesLength, buffer, length);
     }
 
     inline void appendIntToPacketBuffer (int number, char* buffer, int* length) {
         char* numberAsBytes = (char*) &number;
         int bytesLength = sizeof(int);
-        int newLength = *length + bytesLength;
-        if (newLength >= BUFFER_LEN) {
-            error("Exceed packet length");
-        }
-        int j = 0;
-        for (int i = *length; i < newLength; i++) {
-            buffer[i] = numberAsBytes[j];
-            j++;
-        }
-        *length = newLength;
+        appendDataToPacketBuffer(numberAsBytes, bytesLength, buffer, length);
+    }
+
+    inline void appendLongToPacketBuffer (long number, char* buffer, int* length) {
+        char* numberAsBytes = (char*) &number;
+        int bytesLength = sizeof(long);
+        appendDataToPacketBuffer(numberAsBytes, bytesLength, buffer, length);
     }
 }
