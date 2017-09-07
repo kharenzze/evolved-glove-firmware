@@ -11,6 +11,7 @@ using namespace ABElectronics_CPP_Libraries;
 class SensorManager {
 public:
 	void getSensorData(char *buffer, int *length);
+	void init (void);
 private:
 	ADCPi *mainADC, *secondaryADC;
 };
