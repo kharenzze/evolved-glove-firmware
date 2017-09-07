@@ -68,6 +68,7 @@ int main (int argc, char **argv) {
 	int port, sockfd, status;
 	char buffer[BUFFER_LEN];
 	SensorManager manager;
+	manager.init();
 	if (argc > 1) {
 		port = atoi(argv[1]);
 	} else {
@@ -87,7 +88,6 @@ int main (int argc, char **argv) {
 				// 	fflush(stdout);
 				// }
 				sendData(sockfd, data, length);
-				sleep(1);
 			}
 		}
 	}
