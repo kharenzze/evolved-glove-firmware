@@ -19,6 +19,11 @@ void SensorManager::init (void) {
 	// mainADC = new ADCPi(ADDRESS_ADC1_1, ADDRESS_ADC1_2, 18);
 	mainADC->set_conversion_mode(ADC_DEFAULT_CONVERSION_MODE);
 	mainADC->set_pga(ADC_DEFAULT_PGA);
+
+	orientationSensor = new Adafruit_BNO055();
+	if (!orientationSensor->begin()) {
+		error("Orientation Sensor could not start properly");
+	}
 }
 
 void SensorManager::getSensorData (char* buffer, int* length) {
@@ -31,6 +36,15 @@ void SensorManager::getSensorData (char* buffer, int* length) {
 		appendDoubleToPacketBuffer(data, buffer, length);
 		// usleep(30);
 	}
+
+	//Orientation
+	sensors_event_t orientationEvent;
+	orientationSensor->getEvent(&orientationEvent);
+
+	std::cout << orientationEvent.orientation.x << "\t\t" 
+	<< orientationEvent.orientation.y << "\t\t" 
+	<< orientationEvent.orientation.z << std::endl;
+
 	
 	//set Timestamp
 	auto now = chrono::high_resolution_clock::now();

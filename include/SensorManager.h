@@ -14,4 +14,5 @@ public:
 	void init (void);
 private:
 	ADCPi *mainADC, *secondaryADC;
+	Adafruit_BNO055 *orientationSensor;
 };
