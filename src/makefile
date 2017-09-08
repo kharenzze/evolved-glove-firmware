@@ -1,16 +1,19 @@
-IDIR =../include
+IDIR=../include
+UTILITY_DIR=$(IDIR)/utility
 CC=g++
 CFLAGS=-I$(IDIR) -std=c++11
 
 ODIR=obj
-LDIR =../lib
+LDIR=../lib
 
 LIBS=-lwiringPi
 
 _DEPS = $(shell find $(IDIR) -type f)
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = ABE_ADCPi.o SensorManager.o main.o
+UTILITY_DEPS = $(shell find $(UTILITY_DIR) -type f)
+
+_OBJ = ABE_ADCPi.o SensorManager.o main.o Adafruit_BNO055.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 _TEST_FILES = ABE_ADCPi.o test.o
@@ -23,6 +26,9 @@ firm: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 $(ODIR)/ABE_ADCPi.o: ABE_ADCPi.cpp $(IDIR)/ABE_ADCPi.h
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+$(ODIR)/Adafruit_BNO055.o: Adafruit_BNO055.cpp $(IDIR)/Adafruit_BNO055.h $(UTILITY_DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 $(ODIR)/%.o: %.cpp $(DEPS)
