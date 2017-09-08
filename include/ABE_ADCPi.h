@@ -10,9 +10,6 @@ Reads from the MCP3424 ADC on the ADC Pi and ADC Pi Plus.
  apt-get install libi2c-dev
  */
 
-#include <iostream>
-#include <map>
-
 namespace ABElectronics_CPP_Libraries
 {
 class ADCPi
@@ -83,6 +80,7 @@ char update_byte(char byte, char bit, char value);
 */
 void set_channel(char channel);
 
+int i2cbus;
 char i2caddress1;
 char i2caddress2;
 char config1;
@@ -96,7 +94,6 @@ double lsb;
 char writebuffer[1];
 char readbuffer[10];
 char signbit;
-std::map<char, int> _fdStorage;
 
 };
 }
