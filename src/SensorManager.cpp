@@ -20,6 +20,11 @@ void SensorManager::init (void) {
 	mainADC->set_conversion_mode(ADC_DEFAULT_CONVERSION_MODE);
 	mainADC->set_pga(ADC_DEFAULT_PGA);
 
+	secondaryADC = new ADCPi(ADDRESS_ADC1_1, ADDRESS_ADC1_2, ADC_DEFAULT_RATE);
+	// mainADC = new ADCPi(ADDRESS_ADC1_1, ADDRESS_ADC1_2, 18);
+	secondaryADC->set_conversion_mode(ADC_DEFAULT_CONVERSION_MODE);
+	secondaryADC->set_pga(ADC_DEFAULT_PGA);
+
 	orientationSensor = new Adafruit_BNO055();
 	if (!orientationSensor->begin()) {
 		error("Orientation Sensor could not start properly");
@@ -28,23 +33,43 @@ void SensorManager::init (void) {
 
 void SensorManager::getSensorData (char* buffer, int* length) {
 	*length = 8; //reserving space for timestamp
-	cout << "trama init" << endl;
+	if (DEBUG_MODE) {
+		cout << "frame init" << endl;
+	}
+	
 	// reading mainADC data for fingers
-	for (int i = 1; i <= CHANNELS_PER_ADC; i++) {
+	for (int i = 1; i <= CHANNELS_ON_MAIN_ADC; i++) {
 		double data = mainADC->read_voltage(i);
+		//cout << i << ": " << data << endl;
+		appendDoubleToPacketBuffer(data, buffer, length);
+		// usleep(30);
+	}
+	// reading secondaryADC data for fingers
+	for (int i = 1; i <= CHANNELS_ON_SEC_ADC; i++) {
+		double data = secondaryADC->read_voltage(i);
 		//cout << i << ": " << data << endl;
 		appendDoubleToPacketBuffer(data, buffer, length);
 		// usleep(30);
 	}
 
 	//Orientation
-	sensors_event_t orientationEvent;
-	orientationSensor->getEvent(&orientationEvent);
-
-	std::cout << orientationEvent.orientation.x << "\t\t" 
-	<< orientationEvent.orientation.y << "\t\t" 
-	<< orientationEvent.orientation.z << std::endl;
-
+	//sensors_event_t orientationEvent;
+	//orientationSensor->getEvent(&orientationEvent);
+	imu::Vector<3> orientation = orientationSensor->getVector(Adafruit_BNO055::VECTOR_EULER);
+	for (int i = 0; i < 3; i++) {
+		double data = orientation[i];
+		appendDoubleToPacketBuffer(data, buffer, length);
+		if (DEBUG_MODE) {
+			std::cout << data << "\t\t";
+		}
+	}
+	if (DEBUG_MODE) {
+		std::cout << endl;
+	}
+	
+	// std::cout << orientationEvent.orientation.x << "\t\t" 
+	// << orientationEvent.orientation.y << "\t\t" 
+	// << orientationEvent.orientation.z << std::endl;
 	
 	//set Timestamp
 	auto now = chrono::high_resolution_clock::now();
