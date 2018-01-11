@@ -19,3 +19,5 @@
 #define ADDRESS_ADC2_2 0x6B
 
 #define DEBUG_MODE 0
+
+#define NUMBER_OF_FINGERS 10

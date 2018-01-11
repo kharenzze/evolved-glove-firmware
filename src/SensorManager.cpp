@@ -5,10 +5,10 @@
 
 #include "SensorManager.h"
 #include "EGUtils.h"
-#include "EGConfig.h"
 #include <iostream>
 #include <unistd.h>
 #include <chrono>
+#include <limits>
  
 using namespace std;
 using namespace EGUtils;
@@ -29,6 +29,11 @@ void SensorManager::init (void) {
 	if (!orientationSensor->begin()) {
 		error("Orientation Sensor could not start properly");
 	}
+
+	for (int i = 0; i < NUMBER_OF_FINGERS; i++) {
+		fingerVoltage[i].min = numeric_limits<double>::max();
+		fingerVoltage[i].max = numeric_limits<double>::min();
+	}
 }
 
 void SensorManager::getSensorData (char* buffer, int* length) {
@@ -37,18 +42,24 @@ void SensorManager::getSensorData (char* buffer, int* length) {
 		cout << "frame init" << endl;
 	}
 	
+	int fingerNumber = 0;
 	// reading mainADC data for fingers
 	for (int i = 1; i <= CHANNELS_ON_MAIN_ADC; i++) {
-		double data = mainADC->read_voltage(i);
-		//cout << i << ": " << data << endl;
-		appendDoubleToPacketBuffer(data, buffer, length);
+		const double data = mainADC->read_voltage(i);
+		const double normalizedData = _getNormalizedVoltage(data, fingerNumber);
+		fingerNumber++;
+		//cout << i << ": " << normalizedData << endl;
+		appendDoubleToPacketBuffer(normalizedData, buffer, length);
 		// usleep(30);
+		
 	}
 	// reading secondaryADC data for fingers
 	for (int i = 1; i <= CHANNELS_ON_SEC_ADC; i++) {
-		double data = secondaryADC->read_voltage(i);
+		const double data = secondaryADC->read_voltage(i);
+		const double normalizedData = _getNormalizedVoltage(data, fingerNumber);
+		fingerNumber++;
 		//cout << i << ": " << data << endl;
-		appendDoubleToPacketBuffer(data, buffer, length);
+		appendDoubleToPacketBuffer(normalizedData, buffer, length);
 		// usleep(30);
 	}
 
@@ -80,5 +91,15 @@ void SensorManager::getSensorData (char* buffer, int* length) {
 		buffer[i] = timestampAsBytes[i];
 	}
 
+}
+
+double SensorManager::_getNormalizedVoltage(double voltage, int finger) {
+	if (voltage < fingerVoltage[finger].min) {
+		fingerVoltage[finger].min = voltage;
+	} else if (voltage > fingerVoltage[finger].max) {
+		fingerVoltage[finger].max = voltage;
+	}
+	double rangeValue = fingerVoltage[finger].max - fingerVoltage[finger].min;
+	return (voltage - fingerVoltage[finger].min) / rangeValue;
 }
 
